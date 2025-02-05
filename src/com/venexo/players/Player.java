@@ -9,9 +9,9 @@ public class Player {
   private DataInputStream input;
   private boolean isAlive;
 
-  public Player(String name, DataOutputStream command, boolean isAlive) {
+  public Player(String name, DataOutputStream message, boolean isAlive) {
     this.name = name;
-    this.message = command;
+    this.message = message;
     this.isAlive = isAlive;
   }
 
@@ -38,6 +38,7 @@ public class Player {
   public void setAlive(boolean alive) {
     isAlive = alive;
   }
+
   public DataInputStream getInput() {
     return input;
   }
