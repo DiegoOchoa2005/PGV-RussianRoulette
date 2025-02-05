@@ -15,22 +15,20 @@ import com.venexo.utils.Constants;
 
 public class ServerApp {
   public static void main(String[] args) throws IOException {
-    boolean gameStarted = false;
     ServerSocket serverSocket = new ServerSocket(Constants.SERVER_PORT);
-    DataInputStream playerInput = null;
-    DataOutputStream serverOutput = null;
+
     ArrayList<Player> players = new ArrayList<>();
 
     while (players.size() < 2) {
       System.out.println("Waiting for players...");
       Socket clientSocket = serverSocket.accept();
-      playerInput = new DataInputStream(new BufferedInputStream(clientSocket.getInputStream()));
-      serverOutput = new DataOutputStream(new BufferedOutputStream(clientSocket.getOutputStream()));
+      DataInputStream playerInput = new DataInputStream(new BufferedInputStream(clientSocket.getInputStream()));
+      DataOutputStream serverOutput = new DataOutputStream(new BufferedOutputStream(clientSocket.getOutputStream()));
 
       String playerName = playerInput.readUTF();
 
       System.out.println("Player " + playerName + " joined the game!");
-      Player player = new Player(playerName, serverOutput, true);
+      Player player = new Player(clientSocket, playerName, playerInput, serverOutput);
       players.add(player);
 
       serverOutput.writeUTF("Welcome " + playerName + "!");
@@ -46,7 +44,7 @@ public class ServerApp {
 
     try {
       Thread.sleep(3000);
-      new GameHandler(players, playerInput, serverOutput).start();
+      new GameHandler(players).start();
     } catch (Exception e) {
       e.printStackTrace();
     }
