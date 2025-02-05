@@ -17,17 +17,14 @@ public class GameHandler extends Thread {
   private int shootgunRealBullets;
   private ArrayList<String> shootgunBullets = new ArrayList<>();
   private final int MAX_SLOTS = 8;
-  private DataInputStream playerInput;
-  private DataOutputStream playerOutput;
 
-  public GameHandler(ArrayList<Player> players, DataInputStream playerInput, DataOutputStream playerOutput) {
+  public GameHandler(ArrayList<Player> players) {
     this.players = players;
     this.playerCount = players.size();
     this.round = 0;
     this.shootgunFakeBullets = 0;
     this.shootgunRealBullets = 0;
-    this.playerInput = playerInput;
-    this.playerOutput = playerOutput;
+
   }
 
   private void rulesExplication() throws IOException {
@@ -58,21 +55,57 @@ public class GameHandler extends Thread {
     }
   }
 
-  private void roundStart() {
+  private void newRoundMessage() {
+    for (Player player : players) {
+      try {
+        player.getMessage().writeUTF("WELCOME TO ROUND " + this.round + "!");
+        player.getMessage().writeUTF("THERE ARE " + this.playerCount + " PLAYERS ALIVE!");
+        player.getMessage()
+            .writeUTF("\nTHE SHOOTGUN HAS:\nFAKE BULLETS: " + this.shootgunFakeBullets + " \nREAL BULLETS: "
+                + this.shootgunRealBullets + "\n");
+        player.getMessage().flush();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
+  private void starterPlayerMessage() {
+    for (Player player : players) {
+      try {
+        player.getMessage()
+            .writeUTF("🎉 PLAYER: " + this.players.get(this.currentPlayer).getName() + " IS THE STARTER!");
+        player.getMessage().flush();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+
+  }
+
+  private void prepareRound() {
     this.round++;
     fillShootgun();
+  }
+
+  private void announceRound() {
     this.waitConsoleTime(2000);
-    System.out.println("WELCOME TO ROUND " + this.round + "!");
-    System.out.println("THERE ARE " + this.playerCount + " PLAYERS ALIVE!");
-    System.out.printf("\nTHE SHOOTGUN HAS:\nFAKE BULLETS: %d \nREAL BULLETS: %d\n",
-        this.shootgunFakeBullets,
-        this.shootgunRealBullets);
+    this.newRoundMessage();
+  }
+
+  private void startTurn() {
     this.waitConsoleTime(3000);
     this.generateRandomStarterPlayerTurn();
     this.waitConsoleTime(1500);
-    System.out.println("🎉 PLAYER: " + this.players.get(this.currentPlayer).getName() + " IS THE STARTER!");
+    this.starterPlayerMessage();
     this.waitConsoleTime(1500);
-    this.actualPlayerMessageOptions();
+  }
+
+  private void roundStart() {
+    prepareRound();
+    announceRound();
+    startTurn();
+    playerAction();
   }
 
   private void randomRealBullets() {
@@ -115,7 +148,7 @@ public class GameHandler extends Thread {
     this.currentPlayer = randomPlayer == 1 ? 0 : 1;
   }
 
-  private void actualPlayerMessageOptions() {
+  private void messageOptions() {
     try {
       this.players.get(this.currentPlayer).getMessage().writeUTF("""
           IT'S YOUR TURN! WHAT DO YOU WANT TO DO?
@@ -129,20 +162,44 @@ public class GameHandler extends Thread {
     }
   }
 
-  private void playerAction(String action) {
+  private String actualPlayerOption() {
+    try {
+      messageOptions();
+      while (this.players.get(this.currentPlayer).getInput().available() == 0) {
+        Thread.sleep(100);
+      }
+      return this.players.get(this.currentPlayer).getInput().readUTF();
+    } catch (IOException e) {
+      e.printStackTrace();
+      return "";
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+      return "";
+    }
+  }
+
+  private void playerAction() {
+    String action = "";
+    while (true) {
+      action = actualPlayerOption();
+      if (action.equalsIgnoreCase("player") || action.equalsIgnoreCase("myself")) {
+        break;
+      } else {
+        try {
+          this.players.get(this.currentPlayer).getMessage().writeUTF("Please choose a valid action!");
+          this.players.get(this.currentPlayer).getMessage().flush();
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+      }
+    }
+
     switch (action.toLowerCase()) {
       case "player":
         System.out.println("PLAYER: Choose a player to shoot.");
         break;
       case "myself":
-        System.out.println("PLAYER: Choose to Shoot himself.");
-      default:
-        try {
-          this.players.get(this.currentPlayer).getMessage().writeUTF("Please choose a valid action!");
-          this.players.get(this.currentPlayer).getMessage().flush();
-        } catch (Exception e) {
-          e.printStackTrace();
-        }
+        System.out.println("PLAYER: Chooses to shoot himself.");
         break;
     }
   }
@@ -151,9 +208,8 @@ public class GameHandler extends Thread {
   public void run() {
     try {
       rulesExplication();
-      roundStart();
-      for (int i = 0; i < 4; i++) {
-        generateRandomStarterPlayerTurn();
+      while (true) {
+        roundStart();
       }
     } catch (IOException e) {
       e.printStackTrace();
