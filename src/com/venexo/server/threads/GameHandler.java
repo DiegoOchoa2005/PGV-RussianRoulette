@@ -17,6 +17,7 @@ public class GameHandler extends Thread {
   private int shootgunRealBullets;
   private ArrayList<String> shootgunBullets = new ArrayList<>();
   private final int MAX_SLOTS = 8;
+  private boolean isRoundStarted;
 
   public GameHandler(ArrayList<Player> players) {
     this.players = players;
@@ -24,7 +25,7 @@ public class GameHandler extends Thread {
     this.round = 0;
     this.shootgunFakeBullets = 0;
     this.shootgunRealBullets = 0;
-
+    this.isRoundStarted = false;
   }
 
   private void rulesExplication() throws IOException {
@@ -84,6 +85,7 @@ public class GameHandler extends Thread {
   }
 
   private void prepareRound() {
+    this.isRoundStarted = true;
     this.round++;
     fillShootgun();
   }
@@ -148,6 +150,22 @@ public class GameHandler extends Thread {
     this.currentPlayer = randomPlayer == 1 ? 0 : 1;
   }
 
+  private void calculatePlayerNextTurn() {
+    this.currentPlayer = this.currentPlayer == 0 ? 1 : 0;
+  }
+
+  private void playerNextTurnMessage() {
+    this.calculatePlayerNextTurn();
+    for (Player player : players) {
+      try {
+        player.getMessage().writeUTF("IS PLAYER " + this.players.get(this.currentPlayer).getName() + " TURN!");
+        player.getMessage().flush();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
   private void messageOptions() {
     try {
       this.players.get(this.currentPlayer).getMessage().writeUTF("""
@@ -210,6 +228,12 @@ public class GameHandler extends Thread {
       rulesExplication();
       while (true) {
         roundStart();
+        if (this.isRoundStarted) {
+          this.waitConsoleTime(2000);
+          playerNextTurnMessage();
+          playerAction();
+          this.waitConsoleTime(1500);
+        }
       }
     } catch (IOException e) {
       e.printStackTrace();
