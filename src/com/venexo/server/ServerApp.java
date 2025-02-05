@@ -10,6 +10,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 
 import com.venexo.players.Player;
+import com.venexo.server.threads.GameHandler;
 import com.venexo.utils.Constants;
 
 public class ServerApp {
@@ -19,22 +20,34 @@ public class ServerApp {
 
     ArrayList<Player> players = new ArrayList<>();
 
-    Socket clientSocket = serverSocket.accept();
-    DataInputStream playerInput = new DataInputStream(new BufferedInputStream(clientSocket.getInputStream()));
-    DataOutputStream playerOutput = new DataOutputStream(new BufferedOutputStream(clientSocket.getOutputStream()));
+    while (players.size() < 2) {
+      System.out.println("Waiting for players...");
+      Socket clientSocket = serverSocket.accept();
+      DataInputStream playerInput = new DataInputStream(new BufferedInputStream(clientSocket.getInputStream()));
+      DataOutputStream playerOutput = new DataOutputStream(new BufferedOutputStream(clientSocket.getOutputStream()));
 
-    String playerName = playerInput.readUTF();
-    System.out.println("Player " + playerName + " connected");
+      String playerName = playerInput.readUTF();
 
-    Player player = new Player(playerName, playerOutput, true);
-    players.add(player);
+      System.out.println("Player " + playerName + " joined the game!");
+      Player player = new Player(playerName, playerOutput, true);
+      players.add(player);
 
-    System.out.println(players.size());
+      playerOutput.writeUTF("Welcome " + playerName + "!\nWaiting for player 2...");
+      playerOutput.flush();
+      System.out.println(players.size());
+    }
+    System.out.println("🎉 ¡Two players joined the game! Starting game...");
 
-    if (players.size() >= 2 && players.size() < 3 && !gameStarted) {
-      gameStarted = true;
-    } else {
-      System.out.println("Waiting for 2 players");
+    for (Player player : players) {
+      player.getCommand().writeUTF("🚀 The game is going to start. Get ready!\n");
+      player.getCommand().flush();
+    }
+
+    try {
+      Thread.sleep(3000);
+      new GameHandler(players).start();
+    } catch (Exception e) {
+      e.printStackTrace();
     }
   }
 }
