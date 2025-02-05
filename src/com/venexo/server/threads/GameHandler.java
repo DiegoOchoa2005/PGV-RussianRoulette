@@ -69,7 +69,10 @@ public class GameHandler extends Thread {
         this.shootgunRealBullets);
     this.waitConsoleTime(3000);
     this.generateRandomStarterPlayerTurn();
-
+    this.waitConsoleTime(1500);
+    System.out.println("🎉 PLAYER: " + this.players.get(this.currentPlayer).getName() + " IS THE STARTER!");
+    this.waitConsoleTime(1500);
+    this.actualPlayerMessageOptions();
   }
 
   private void randomRealBullets() {
@@ -110,7 +113,6 @@ public class GameHandler extends Thread {
   private void generateRandomStarterPlayerTurn() {
     int randomPlayer = (int) (Math.random() * this.playerCount) + 1;
     this.currentPlayer = randomPlayer == 1 ? 0 : 1;
-    System.out.println("🎉 PLAYER: " + this.players.get(this.currentPlayer).getName() + " IS THE STARTER!");
   }
 
   private void actualPlayerMessageOptions() {
@@ -122,6 +124,7 @@ public class GameHandler extends Thread {
           Be careful, maybe you could die! :D
           """);
       this.players.get(this.currentPlayer).getCommand().flush();
+
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -130,15 +133,16 @@ public class GameHandler extends Thread {
   private void playerAction(String action) {
     switch (action.toLowerCase()) {
       case "player":
-
+        System.out.println("PLAYER: Choose a player to shoot.");
         break;
       case "myself":
+        System.out.println("PLAYER: Choose to Shoot himself.");
       default:
         try {
           this.players.get(this.currentPlayer).getCommand().writeUTF("Please choose a valid action!");
           this.players.get(this.currentPlayer).getCommand().flush();
         } catch (Exception e) {
-          // TODO: handle exception
+          e.printStackTrace();
         }
         break;
     }
