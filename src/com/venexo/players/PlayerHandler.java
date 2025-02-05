@@ -28,7 +28,6 @@ public class PlayerHandler {
     serverListenerThread.start();
 
     while (true) {
-      System.out.print("-> ");
       String action = scanner.nextLine();
 
       outputStream.writeUTF(action);
