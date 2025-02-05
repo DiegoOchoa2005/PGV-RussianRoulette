@@ -1,15 +1,17 @@
 package com.venexo.players;
 
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
 public class Player {
   private String name;
-  private DataOutputStream command;
+  private DataOutputStream message;
+  private DataInputStream input;
   private boolean isAlive;
 
   public Player(String name, DataOutputStream command, boolean isAlive) {
     this.name = name;
-    this.command = command;
+    this.message = command;
     this.isAlive = isAlive;
   }
 
@@ -21,12 +23,12 @@ public class Player {
     this.name = name;
   }
 
-  public DataOutputStream getCommand() {
-    return command;
+  public DataOutputStream getMessage() {
+    return message;
   }
 
-  public void setCommand(DataOutputStream command) {
-    this.command = command;
+  public void setMessage(DataOutputStream command) {
+    this.message = command;
   }
 
   public boolean isAlive() {
@@ -35,5 +37,12 @@ public class Player {
 
   public void setAlive(boolean alive) {
     isAlive = alive;
+  }
+  public DataInputStream getInput() {
+    return input;
+  }
+
+  public void setInput(DataInputStream input) {
+    this.input = input;
   }
 }
