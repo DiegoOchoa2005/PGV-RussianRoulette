@@ -13,7 +13,7 @@ import com.venexo.utils.Constants;
 public class PlayerHandler {
   public static void main(String[] args) throws Exception {
     Scanner scanner = new Scanner(System.in);
-    System.out.println("Introduce tu nombre hermoso: ");
+    System.out.println("Introduce your beatiful name: ");
     String name = scanner.nextLine();
     Socket socket = new Socket("localhost", Constants.SERVER_PORT);
 
