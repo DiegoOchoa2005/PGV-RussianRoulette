@@ -35,10 +35,10 @@ public class ServerApp {
       serverOutput.flush();
       System.out.println(players.size());
     }
-    System.out.println("🎉 ¡Two players joined the game! Starting game...");
+    System.out.println("¡Two players joined the game! Starting game...");
 
     for (Player player : players) {
-      player.getMessage().writeUTF("🚀 The game is going to start. Get ready!\n");
+      player.getMessage().writeUTF("The game is going to start. Get ready!\n");
       player.getMessage().flush();
     }
 

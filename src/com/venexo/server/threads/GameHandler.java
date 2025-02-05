@@ -1,7 +1,5 @@
 package com.venexo.server.threads;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,6 +10,7 @@ public class GameHandler extends Thread {
   private ArrayList<Player> players;
   private int playerCount = 0;
   private int currentPlayer = 0;
+  private String playerShooted = "";
   private int round;
   private int shootgunFakeBullets;
   private int shootgunRealBullets;
@@ -219,18 +218,21 @@ public class GameHandler extends Thread {
     switch (action.toLowerCase()) {
       case "player":
         int otherPlayerIndex = this.currentPlayer == 0 ? 1 : 0;
+        this.playerShooted = this.players.get(otherPlayerIndex).getName();
         this.shootAction(otherPlayerIndex);
         break;
       case "myself":
+        this.playerShooted = this.players.get(this.currentPlayer).getName();
         this.shootAction(this.currentPlayer);
         break;
     }
   }
 
-  private void announceWhatBulletHasBeenShot(String playerName, String bullet) {
+  private void announceShoot(String playerName, String bullet) {
     for (Player player : players) {
       try {
-        player.getMessage().writeUTF("PLAYER: " + playerName + " SHOOTS " + bullet + " BULLET!");
+        player.getMessage()
+            .writeUTF("PLAYER: " + playerName + " SHOOTS A " + bullet + " BULLET TO " + this.playerShooted);
         player.getMessage().flush();
       } catch (IOException e) {
         e.printStackTrace();
@@ -242,15 +244,16 @@ public class GameHandler extends Thread {
     for (String bullet : this.shootgunBullets) {
       if (!bullet.equals("EMPTY")) {
         if (bullet.equals("FAKE")) {
-          this.announceWhatBulletHasBeenShot(this.players.get(playerIndex).getName(), bullet);
+          this.announceShoot(this.players.get(this.currentPlayer).getName(), bullet);
+          this.shootgunBullets.set(this.shootgunBullets.indexOf(bullet), "EMPTY");
           return;
         }
 
         if (bullet.equals("REAL")) {
-          // hacer que se le baje la vida al jugador un punto al momento de disparar
-
+          this.announceShoot(this.players.get(playerIndex).getName(), bullet);
+          this.shootgunBullets.set(this.shootgunBullets.indexOf(bullet), "EMPTY");
+          return;
         }
-
       }
     }
   }
@@ -261,7 +264,7 @@ public class GameHandler extends Thread {
       rulesExplication();
       while (true) {
         roundStart();
-        if (this.isRoundStarted) {
+        while (this.isRoundStarted) {
           this.waitConsoleTime(2000);
           playerNextTurnMessage();
           playerAction();

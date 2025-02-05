@@ -16,7 +16,6 @@ public class ServerListener extends Thread {
       try {
         String serverMessage = this.inputStream.readUTF();
         System.out.println("\n" + serverMessage);
-        System.out.print("-> ");
       } catch (IOException e) {
         System.out.println("🔴 Conexión con el servidor perdida.");
         break;
