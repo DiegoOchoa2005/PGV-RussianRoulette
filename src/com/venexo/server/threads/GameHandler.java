@@ -32,8 +32,8 @@ public class GameHandler extends Thread {
 
   private void rulesExplication() throws IOException {
     for (Player player : players) {
-      player.getCommand().writeUTF("Hello " + player.getName() + "!\n");
-      player.getCommand().writeUTF(
+      player.getMessage().writeUTF("Hello " + player.getName() + "!\n");
+      player.getMessage().writeUTF(
           """
               Rules are simple:
               - There's gonna be just one shotgun for all of you.
@@ -46,7 +46,7 @@ public class GameHandler extends Thread {
               - The game will end when one player is dead.
               - Good luck :D
               """);
-      player.getCommand().flush();
+      player.getMessage().flush();
     }
   }
 
@@ -117,14 +117,13 @@ public class GameHandler extends Thread {
 
   private void actualPlayerMessageOptions() {
     try {
-      this.players.get(this.currentPlayer).getCommand().writeUTF("""
+      this.players.get(this.currentPlayer).getMessage().writeUTF("""
           IT'S YOUR TURN! WHAT DO YOU WANT TO DO?
           - PLAYER: To choose a player to shoot.
           - MYSELF: To shoot yourself.
           Be careful, maybe you could die! :D
           """);
-      this.players.get(this.currentPlayer).getCommand().flush();
-
+      this.players.get(this.currentPlayer).getMessage().flush();
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -139,8 +138,8 @@ public class GameHandler extends Thread {
         System.out.println("PLAYER: Choose to Shoot himself.");
       default:
         try {
-          this.players.get(this.currentPlayer).getCommand().writeUTF("Please choose a valid action!");
-          this.players.get(this.currentPlayer).getCommand().flush();
+          this.players.get(this.currentPlayer).getMessage().writeUTF("Please choose a valid action!");
+          this.players.get(this.currentPlayer).getMessage().flush();
         } catch (Exception e) {
           e.printStackTrace();
         }

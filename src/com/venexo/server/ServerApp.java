@@ -40,8 +40,8 @@ public class ServerApp {
     System.out.println("🎉 ¡Two players joined the game! Starting game...");
 
     for (Player player : players) {
-      player.getCommand().writeUTF("🚀 The game is going to start. Get ready!\n");
-      player.getCommand().flush();
+      player.getMessage().writeUTF("🚀 The game is going to start. Get ready!\n");
+      player.getMessage().flush();
     }
 
     try {
