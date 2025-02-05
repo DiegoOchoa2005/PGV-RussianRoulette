@@ -17,23 +17,24 @@ public class ServerApp {
   public static void main(String[] args) throws IOException {
     boolean gameStarted = false;
     ServerSocket serverSocket = new ServerSocket(Constants.SERVER_PORT);
-
+    DataInputStream playerInput = null;
+    DataOutputStream serverOutput = null;
     ArrayList<Player> players = new ArrayList<>();
 
     while (players.size() < 2) {
       System.out.println("Waiting for players...");
       Socket clientSocket = serverSocket.accept();
-      DataInputStream playerInput = new DataInputStream(new BufferedInputStream(clientSocket.getInputStream()));
-      DataOutputStream playerOutput = new DataOutputStream(new BufferedOutputStream(clientSocket.getOutputStream()));
+      playerInput = new DataInputStream(new BufferedInputStream(clientSocket.getInputStream()));
+      serverOutput = new DataOutputStream(new BufferedOutputStream(clientSocket.getOutputStream()));
 
       String playerName = playerInput.readUTF();
 
       System.out.println("Player " + playerName + " joined the game!");
-      Player player = new Player(playerName, playerOutput, true);
+      Player player = new Player(playerName, serverOutput, true);
       players.add(player);
 
-      playerOutput.writeUTF("Welcome " + playerName + "!\nWaiting for player 2...");
-      playerOutput.flush();
+      serverOutput.writeUTF("Welcome " + playerName + "!");
+      serverOutput.flush();
       System.out.println(players.size());
     }
     System.out.println("🎉 ¡Two players joined the game! Starting game...");
@@ -45,7 +46,7 @@ public class ServerApp {
 
     try {
       Thread.sleep(3000);
-      new GameHandler(players).start();
+      new GameHandler(players, playerInput, serverOutput).start();
     } catch (Exception e) {
       e.printStackTrace();
     }
