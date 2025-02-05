@@ -196,7 +196,7 @@ public class GameHandler extends Thread {
     }
   }
 
-  private void playerAction() {
+  private String handlePlayerInput() {
     String action = "";
     while (true) {
       action = actualPlayerOption();
@@ -211,14 +211,47 @@ public class GameHandler extends Thread {
         }
       }
     }
+    return action;
+  }
 
+  private void playerAction() {
+    String action = handlePlayerInput();
     switch (action.toLowerCase()) {
       case "player":
-        System.out.println("PLAYER: Choose a player to shoot.");
+        int otherPlayerIndex = this.currentPlayer == 0 ? 1 : 0;
+        this.shootAction(otherPlayerIndex);
         break;
       case "myself":
-        System.out.println("PLAYER: Chooses to shoot himself.");
+        this.shootAction(this.currentPlayer);
         break;
+    }
+  }
+
+  private void announceWhatBulletHasBeenShot(String playerName, String bullet) {
+    for (Player player : players) {
+      try {
+        player.getMessage().writeUTF("PLAYER: " + playerName + " SHOOTS " + bullet + " BULLET!");
+        player.getMessage().flush();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
+  private void shootAction(int playerIndex) {
+    for (String bullet : this.shootgunBullets) {
+      if (!bullet.equals("EMPTY")) {
+        if (bullet.equals("FAKE")) {
+          this.announceWhatBulletHasBeenShot(this.players.get(playerIndex).getName(), bullet);
+          return;
+        }
+
+        if (bullet.equals("REAL")) {
+          // hacer que se le baje la vida al jugador un punto al momento de disparar
+
+        }
+
+      }
     }
   }
 
