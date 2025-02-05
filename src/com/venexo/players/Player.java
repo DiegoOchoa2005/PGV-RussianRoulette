@@ -2,33 +2,34 @@ package com.venexo.players;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.Socket;
 
 public class Player {
+  private Socket socket;
   private String name;
   private DataOutputStream message;
   private DataInputStream input;
   private boolean isAlive;
 
-  public Player(String name, DataOutputStream message, boolean isAlive) {
+  public Player(Socket socket, String name, DataInputStream input, DataOutputStream message) {
+    this.socket = socket;
     this.name = name;
+    this.input = input;
     this.message = message;
-    this.isAlive = isAlive;
+    this.isAlive = true;
   }
 
   public String getName() {
     return name;
   }
 
-  public void setName(String name) {
-    this.name = name;
-  }
-
   public DataOutputStream getMessage() {
     return message;
   }
 
-  public void setMessage(DataOutputStream command) {
-    this.message = command;
+  public DataInputStream getInput() {
+    return input;
   }
 
   public boolean isAlive() {
@@ -37,13 +38,5 @@ public class Player {
 
   public void setAlive(boolean alive) {
     isAlive = alive;
-  }
-
-  public DataInputStream getInput() {
-    return input;
-  }
-
-  public void setInput(DataInputStream input) {
-    this.input = input;
   }
 }
