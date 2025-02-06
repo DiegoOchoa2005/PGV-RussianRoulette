@@ -10,6 +10,7 @@ public class GameHandler extends Thread {
   private ArrayList<Player> players;
   private int playerCount = 0;
   private int currentPlayer = 0;
+  private String deadPlayer = "";
   private String playerShooted = "";
   private int round;
   private int shootgunFakeBullets;
@@ -17,6 +18,7 @@ public class GameHandler extends Thread {
   private ArrayList<String> shootgunBullets = new ArrayList<>();
   private final int MAX_SLOTS = 8;
   private boolean isRoundStarted;
+  private boolean isGameOver;
 
   public GameHandler(ArrayList<Player> players) {
     this.players = players;
@@ -25,6 +27,7 @@ public class GameHandler extends Thread {
     this.shootgunFakeBullets = 0;
     this.shootgunRealBullets = 0;
     this.isRoundStarted = false;
+    this.isGameOver = false;
   }
 
   private void rulesExplication() throws IOException {
@@ -39,7 +42,7 @@ public class GameHandler extends Thread {
               - The player's turn to use the shotgun is random when is a new round.
               - If the player shoots to the other player or himself, the turn will be passed to the next player.
               - The round will end when the shotgun is empty.
-              - Each player has 3 lives.
+              - Each player has 9 lives.
               - The game will end when one player is dead.
               - Good luck :D
               """);
@@ -72,7 +75,6 @@ public class GameHandler extends Thread {
     for (Player player : players) {
       try {
         player.getMessage().writeUTF("WELCOME TO ROUND " + this.round + "!");
-        player.getMessage().writeUTF("THERE ARE " + this.playerCount + " PLAYERS ALIVE!");
         player.getMessage().flush();
       } catch (IOException e) {
         e.printStackTrace();
@@ -96,7 +98,7 @@ public class GameHandler extends Thread {
     for (Player player : players) {
       try {
         player.getMessage()
-            .writeUTF("🎉 PLAYER: " + this.players.get(this.currentPlayer).getName() + " IS THE STARTER!");
+            .writeUTF("PLAYER: " + this.players.get(this.currentPlayer).getName() + " IS THE STARTER!");
         player.getMessage().flush();
       } catch (IOException e) {
         e.printStackTrace();
@@ -114,6 +116,8 @@ public class GameHandler extends Thread {
   private void announceRound() {
     this.waitConsoleTime(2000);
     this.newRoundMessage();
+    this.waitConsoleTime(2000);
+    this.announcePlayersCurrentLives();
     this.waitConsoleTime(2000);
     this.announceCurrentBullets();
   }
@@ -135,6 +139,7 @@ public class GameHandler extends Thread {
 
   private void roundFinish() {
     this.isRoundStarted = false;
+    this.checkIfPlayerIsDeath();
   }
 
   private void randomRealBullets() {
@@ -194,14 +199,13 @@ public class GameHandler extends Thread {
   }
 
   private int calcualteNextPlayer() {
-    return this.currentPlayer = this.currentPlayer == 0 ? 1 : 0;
+    return this.currentPlayer == 0 ? 1 : 0;
   }
 
   private void playerNextTurnMessage() {
-    int nextPlayerIndex = this.calcualteNextPlayer();
     for (Player player : players) {
       try {
-        player.getMessage().writeUTF("\nIS PLAYER " + this.players.get(nextPlayerIndex).getName() + " TURN!\n");
+        player.getMessage().writeUTF("IS " + this.players.get(this.currentPlayer).getName() + "'s TURN!");
         player.getMessage().flush();
       } catch (IOException e) {
         e.printStackTrace();
@@ -258,6 +262,9 @@ public class GameHandler extends Thread {
   }
 
   private void playerAction() {
+    if (isGameOver) {
+      return;
+    }
     String action = handlePlayerInput().toLowerCase();
     switch (action) {
       case "player":
@@ -269,13 +276,18 @@ public class GameHandler extends Thread {
         this.shootAction(action);
         break;
     }
+    this.currentPlayer = this.calcualteNextPlayer();
+    this.checkIfPlayerIsDeath();
+    if (isGameOver) {
+      return;
+    }
   }
 
   private void announceShoot(String playerName, String bullet) {
     for (Player player : players) {
       try {
         player.getMessage()
-            .writeUTF("PLAYER: " + playerName + " SHOOTS A " + bullet + " BULLET TO " + this.playerShooted);
+            .writeUTF(playerName + " SHOOTS A " + bullet + " BULLET TO " + this.playerShooted);
         player.getMessage().flush();
       } catch (IOException e) {
         e.printStackTrace();
@@ -285,17 +297,19 @@ public class GameHandler extends Thread {
 
   private void shootAction(String actionDisplayed) {
     int playerAffected = actionDisplayed.equalsIgnoreCase("myself") ? this.currentPlayer : this.calcualteNextPlayer();
+    String shooterName = this.players.get(this.currentPlayer).getName();
+    System.out.println(playerAffected);
     for (String bullet : this.shootgunBullets) {
       if (!bullet.equals("EMPTY")) {
         if (bullet.equals("FAKE")) {
-          this.announceShoot(this.players.get(this.currentPlayer).getName(), bullet);
+          this.announceShoot(shooterName, bullet);
           this.shootgunBullets.set(this.shootgunBullets.indexOf(bullet), "EMPTY");
           this.calculateCurrentFakeBullets();
           return;
         }
 
         if (bullet.equals("REAL")) {
-          this.announceShoot(this.players.get(this.currentPlayer).getName(), bullet);
+          this.announceShoot(shooterName, bullet);
           this.players.get(playerAffected).getShot();
           this.shootgunBullets.set(this.shootgunBullets.indexOf(bullet), "EMPTY");
           this.calculateCurrentRealBullets();
@@ -303,6 +317,7 @@ public class GameHandler extends Thread {
         }
       }
     }
+
   }
 
   private boolean isShotgunEmpty() {
@@ -320,31 +335,94 @@ public class GameHandler extends Thread {
     return isEmpty;
   }
 
+  private void announceDeathPlayer(String playerName) {
+    for (Player player : players) {
+      try {
+        player.getMessage().writeUTF("PLAYER: " + playerName + " IS DEAD!");
+        player.getMessage().flush();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
+  private void checkIfPlayerIsDeath() {
+    for (int i = 0; i < players.size(); i++) {
+      if (!players.get(i).isAlive()) {
+        this.isGameOver = true;
+        this.deadPlayer = players.get(i).getName();
+        return;
+      }
+    }
+  }
+
+  private void announcePlayersCurrentLives() {
+    for (Player player : players) {
+      try {
+        player.getMessage().writeUTF(this.players.get(0).getName() + "'s LIVES: "
+            + this.players.get(0).getLives());
+        player.getMessage().writeUTF(this.players.get(1).getName() + "'s LIVES: "
+            + this.players.get(1).getLives());
+        player.getMessage().flush();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
+  private void announceWinner() {
+    Player winner = this.players.get(0);
+    for (Player player : players) {
+      try {
+        player.getMessage().writeUTF("THE GAME IS OVER! The winner is: " + winner.getName());
+        player.getMessage().flush();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
   @Override
   public void run() {
     try {
       rulesExplication();
-      while (this.players.size() > 1) {
+      while (this.players.size() > 1 && !this.isGameOver) {
         roundStart();
-        this.waitConsoleTime(2000);
+        if (isGameOver) {
+          break;
+        }
+        this.waitConsoleTime(1500);
+        this.announcePlayersCurrentLives();
+        this.waitConsoleTime(1500);
         this.announceCurrentBullets();
-        while (this.isRoundStarted) {
+        while (this.isRoundStarted && this.players.size() > 1 && !this.isGameOver) {
           this.waitConsoleTime(2000);
           playerNextTurnMessage();
           this.waitConsoleTime(1500);
           playerAction();
+          if (isGameOver) {
+            break;
+          }
+          this.waitConsoleTime(1500);
+          this.announcePlayersCurrentLives();
           this.waitConsoleTime(1500);
 
           if (!this.isShotgunEmpty()) {
             this.announceCurrentBullets();
-          }
-          if (this.isShotgunEmpty()) {
+          } else {
             this.waitConsoleTime(2000);
             this.finishRoundMessage();
             this.waitConsoleTime(2000);
             this.roundFinish();
           }
         }
+      }
+      if (isGameOver) {
+        this.waitConsoleTime(2000);
+        this.announceDeathPlayer(deadPlayer);
+        this.waitConsoleTime(1000);
+        this.announceWinner();
+        this.waitConsoleTime(1000);
       }
     } catch (IOException e) {
       e.printStackTrace();

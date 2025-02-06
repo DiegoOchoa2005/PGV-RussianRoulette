@@ -51,17 +51,9 @@ public class Player {
   }
 
   public void getShot() {
-    if (this.lives < 0) {
-      this.lives = 0;
-
-      return;
-    }
-
-    if (this.lives == 0) {
-      this.isAlive = false;
-      return;
-    }
-
     this.lives--;
+    if (this.lives <= 0) {
+      this.isAlive = false;
+    }
   }
 }
