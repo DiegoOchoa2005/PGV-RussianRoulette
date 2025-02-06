@@ -19,7 +19,7 @@ public class Player {
     this.input = input;
     this.message = message;
     this.isAlive = true;
-    this.lives = 9;
+    this.lives = 3;
   }
 
   public String getName() {
