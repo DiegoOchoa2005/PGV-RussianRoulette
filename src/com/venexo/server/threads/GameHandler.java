@@ -193,15 +193,15 @@ public class GameHandler extends Thread {
     this.currentPlayer = randomPlayer == 1 ? 0 : 1;
   }
 
-  private void calculatePlayerNextTurn() {
-    this.currentPlayer = this.currentPlayer == 0 ? 1 : 0;
+  private int calcualteNextPlayer() {
+    return this.currentPlayer = this.currentPlayer == 0 ? 1 : 0;
   }
 
   private void playerNextTurnMessage() {
-    this.calculatePlayerNextTurn();
+    int nextPlayerIndex = this.calcualteNextPlayer();
     for (Player player : players) {
       try {
-        player.getMessage().writeUTF("\nIS PLAYER " + this.players.get(this.currentPlayer).getName() + " TURN!\n");
+        player.getMessage().writeUTF("\nIS PLAYER " + this.players.get(nextPlayerIndex).getName() + " TURN!\n");
         player.getMessage().flush();
       } catch (IOException e) {
         e.printStackTrace();
@@ -258,16 +258,15 @@ public class GameHandler extends Thread {
   }
 
   private void playerAction() {
-    String action = handlePlayerInput();
-    switch (action.toLowerCase()) {
+    String action = handlePlayerInput().toLowerCase();
+    switch (action) {
       case "player":
-        int otherPlayerIndex = this.currentPlayer == 0 ? 1 : 0;
-        this.playerShooted = this.players.get(otherPlayerIndex).getName();
-        this.shootAction();
+        this.playerShooted = this.players.get(this.calcualteNextPlayer()).getName();
+        this.shootAction(action);
         break;
       case "myself":
         this.playerShooted = this.players.get(this.currentPlayer).getName();
-        this.shootAction();
+        this.shootAction(action);
         break;
     }
   }
@@ -284,7 +283,8 @@ public class GameHandler extends Thread {
     }
   }
 
-  private void shootAction() {
+  private void shootAction(String actionDisplayed) {
+    int playerAffected = actionDisplayed.equalsIgnoreCase("myself") ? this.currentPlayer : this.calcualteNextPlayer();
     for (String bullet : this.shootgunBullets) {
       if (!bullet.equals("EMPTY")) {
         if (bullet.equals("FAKE")) {
@@ -296,6 +296,7 @@ public class GameHandler extends Thread {
 
         if (bullet.equals("REAL")) {
           this.announceShoot(this.players.get(this.currentPlayer).getName(), bullet);
+          this.players.get(playerAffected).getShot();
           this.shootgunBullets.set(this.shootgunBullets.indexOf(bullet), "EMPTY");
           this.calculateCurrentRealBullets();
           return;
@@ -323,7 +324,7 @@ public class GameHandler extends Thread {
   public void run() {
     try {
       rulesExplication();
-      while (true) {
+      while (this.players.size() > 1) {
         roundStart();
         this.waitConsoleTime(2000);
         this.announceCurrentBullets();
