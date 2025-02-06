@@ -128,6 +128,22 @@ public class GameHandler extends Thread {
     this.shootgunFakeBullets = 1 + (int) (Math.random() * (MAX_SLOTS - 4) + 1);
   }
 
+  private void calculateCurrentRealBullets() {
+    if (this.shootgunRealBullets < 0) {
+      this.shootgunRealBullets = 0;
+      return;
+    }
+    this.shootgunRealBullets--;
+  }
+
+  private void calculateCurrentFakeBullets() {
+    if (this.shootgunFakeBullets < 0) {
+      this.shootgunFakeBullets = 0;
+      return;
+    }
+    this.shootgunFakeBullets--;
+  }
+
   private void generateBullets() {
     randomRealBullets();
     randomFakeBullets();
@@ -257,12 +273,14 @@ public class GameHandler extends Thread {
         if (bullet.equals("FAKE")) {
           this.announceShoot(this.players.get(this.currentPlayer).getName(), bullet);
           this.shootgunBullets.set(this.shootgunBullets.indexOf(bullet), "EMPTY");
+          this.calculateCurrentFakeBullets();
           return;
         }
 
         if (bullet.equals("REAL")) {
           this.announceShoot(this.players.get(this.currentPlayer).getName(), bullet);
           this.shootgunBullets.set(this.shootgunBullets.indexOf(bullet), "EMPTY");
+          this.calculateCurrentRealBullets();
           return;
         }
       }
@@ -275,6 +293,8 @@ public class GameHandler extends Thread {
       rulesExplication();
       while (true) {
         roundStart();
+        this.waitConsoleTime(2000);
+        this.announceCurrentBullets();
         while (this.isRoundStarted) {
           this.waitConsoleTime(2000);
           playerNextTurnMessage();
