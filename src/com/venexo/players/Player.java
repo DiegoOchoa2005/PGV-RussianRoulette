@@ -11,6 +11,7 @@ public class Player {
   private DataOutputStream message;
   private DataInputStream input;
   private boolean isAlive;
+  private int lives;
 
   public Player(Socket socket, String name, DataInputStream input, DataOutputStream message) {
     this.socket = socket;
@@ -18,6 +19,7 @@ public class Player {
     this.input = input;
     this.message = message;
     this.isAlive = true;
+    this.lives = 9;
   }
 
   public String getName() {
@@ -38,5 +40,22 @@ public class Player {
 
   public void setAlive(boolean alive) {
     isAlive = alive;
+  }
+
+  public int getLives() {
+    return lives;
+  }
+
+  public void setLives(int lives) {
+    this.lives = lives;
+  }
+
+  public void getShot() {
+    if (this.lives < 0) {
+      this.lives = 0;
+      return;
+    }
+
+    this.lives--;
   }
 }
