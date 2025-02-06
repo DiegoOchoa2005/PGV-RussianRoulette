@@ -71,17 +71,6 @@ public class GameHandler extends Thread {
     }
   }
 
-  private void newRoundMessage() {
-    for (Player player : players) {
-      try {
-        player.getMessage().writeUTF("WELCOME TO ROUND " + this.round + "!");
-        player.getMessage().flush();
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
-    }
-  }
-
   private void finishRoundMessage() {
     for (Player player : players) {
       try {
@@ -114,16 +103,17 @@ public class GameHandler extends Thread {
   }
 
   private void announceRound() {
-    this.waitConsoleTime(1000);
-    this.newRoundMessage();
+    if (this.round > 1) {
+      this.showTimeToStartARound(3000);
+    }
+    this.showActualRoundMessage();
     this.waitConsoleTime(1000);
     this.announcePlayersCurrentLives();
-    this.waitConsoleTime(1000);
     this.announceCurrentBullets();
   }
 
   private void startTurn() {
-    this.waitConsoleTime(2000);
+    this.waitConsoleTime(1000);
     this.generateRandomStarterPlayerTurn();
     this.waitConsoleTime(1500);
     this.starterPlayerMessage();
@@ -134,7 +124,6 @@ public class GameHandler extends Thread {
     prepareRound();
     announceRound();
     startTurn();
-    playerAction();
   }
 
   private void roundFinish() {
@@ -319,6 +308,18 @@ public class GameHandler extends Thread {
 
   }
 
+  private void showActualRoundMessage() {
+    int isFirstRound = this.round == 0 ? 1 : this.round;
+    for (Player player : players) {
+      try {
+        player.getMessage().writeUTF("ROUND: " + isFirstRound);
+        player.getMessage().flush();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
   private boolean isShotgunEmpty() {
     ArrayList<String> emptySlots = new ArrayList<>(shootgunBullets);
     boolean isEmpty = false;
@@ -369,6 +370,36 @@ public class GameHandler extends Thread {
     }
   }
 
+  private void showTimeToStartARound(int miliseconds) {
+    try {
+      int seconds = miliseconds / 1000;
+      int isFirstRound = this.round == 0 ? 1 : this.round;
+      for (int i = seconds; i > 0; i--) {
+        String countdownMessage = "\rTHE ROUND " + isFirstRound + " WILL START IN " + i + "";
+
+        for (Player player : this.players) {
+          try {
+            player.getMessage().writeUTF(countdownMessage);
+            player.getMessage().flush();
+          } catch (IOException e) {
+            e.printStackTrace();
+          }
+        }
+
+        try {
+          Thread.sleep(1000);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+      }
+
+      this.clearConsole();
+    } catch (Exception e) {
+      e.printStackTrace();
+
+    }
+  }
+
   private void announceWinner() {
     Player winner = this.players.get(0);
     for (Player player : players) {
@@ -381,35 +412,52 @@ public class GameHandler extends Thread {
     }
   }
 
+  private void clearConsole() {
+    for (Player player : players) {
+      try {
+        player.getMessage().writeUTF("\033[H\033[2J");
+        player.getMessage().writeUTF("\033[H\033[2J");
+
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
   @Override
   public void run() {
     try {
       rulesExplication();
+      this.showTimeToStartARound(15000);
       while (!this.isGameOver) {
+
         roundStart();
+        playerAction();
+        this.waitConsoleTime(2000);
+        this.clearConsole();
         if (this.isGameOver) {
           break;
         }
-        this.waitConsoleTime(1500);
+        this.showActualRoundMessage();
         this.announcePlayersCurrentLives();
-        this.waitConsoleTime(1500);
         this.announceCurrentBullets();
         while (this.isRoundStarted && !this.isGameOver) {
           this.waitConsoleTime(2000);
           playerNextTurnMessage();
           this.waitConsoleTime(2000);
           playerAction();
+          this.waitConsoleTime(2000);
+          this.clearConsole();
           if (this.isGameOver) {
             break;
           }
-          this.waitConsoleTime(2000);
-          this.announcePlayersCurrentLives();
-          this.waitConsoleTime(2000);
-
           if (!this.isShotgunEmpty()) {
+            this.showActualRoundMessage();
+            this.announcePlayersCurrentLives();
             this.announceCurrentBullets();
           } else {
             this.waitConsoleTime(2000);
+            this.clearConsole();
             this.finishRoundMessage();
             this.waitConsoleTime(2000);
             this.roundFinish();
