@@ -62,8 +62,8 @@ public class GameHandler extends Thread {
     try {
       for (Player player : players) {
         player.getMessage()
-            .writeUTF("\nTHE SHOOTGUN HAS:\nFAKE BULLETS: " + this.shootgunFakeBullets + " \nREAL BULLETS: "
-                + this.shootgunRealBullets + "\n");
+            .writeUTF("THE SHOOTGUN HAS:\nFAKE BULLETS: " + this.shootgunFakeBullets + " \nREAL BULLETS: "
+                + this.shootgunRealBullets);
         player.getMessage().flush();
       }
     } catch (IOException e) {
@@ -114,16 +114,16 @@ public class GameHandler extends Thread {
   }
 
   private void announceRound() {
-    this.waitConsoleTime(2000);
+    this.waitConsoleTime(1000);
     this.newRoundMessage();
-    this.waitConsoleTime(2000);
+    this.waitConsoleTime(1000);
     this.announcePlayersCurrentLives();
-    this.waitConsoleTime(2000);
+    this.waitConsoleTime(1000);
     this.announceCurrentBullets();
   }
 
   private void startTurn() {
-    this.waitConsoleTime(3000);
+    this.waitConsoleTime(2000);
     this.generateRandomStarterPlayerTurn();
     this.waitConsoleTime(1500);
     this.starterPlayerMessage();
@@ -190,7 +190,6 @@ public class GameHandler extends Thread {
       }
     }
     Collections.shuffle(this.shootgunBullets);
-    System.out.println(shootgunBullets);
   }
 
   private void generateRandomStarterPlayerTurn() {
@@ -386,26 +385,26 @@ public class GameHandler extends Thread {
   public void run() {
     try {
       rulesExplication();
-      while (this.players.size() > 1 && !this.isGameOver) {
+      while (!this.isGameOver) {
         roundStart();
-        if (isGameOver) {
+        if (this.isGameOver) {
           break;
         }
         this.waitConsoleTime(1500);
         this.announcePlayersCurrentLives();
         this.waitConsoleTime(1500);
         this.announceCurrentBullets();
-        while (this.isRoundStarted && this.players.size() > 1 && !this.isGameOver) {
+        while (this.isRoundStarted && !this.isGameOver) {
           this.waitConsoleTime(2000);
           playerNextTurnMessage();
-          this.waitConsoleTime(1500);
+          this.waitConsoleTime(2000);
           playerAction();
-          if (isGameOver) {
+          if (this.isGameOver) {
             break;
           }
-          this.waitConsoleTime(1500);
+          this.waitConsoleTime(2000);
           this.announcePlayersCurrentLives();
-          this.waitConsoleTime(1500);
+          this.waitConsoleTime(2000);
 
           if (!this.isShotgunEmpty()) {
             this.announceCurrentBullets();
@@ -417,7 +416,7 @@ public class GameHandler extends Thread {
           }
         }
       }
-      if (isGameOver) {
+      if (this.isGameOver) {
         this.waitConsoleTime(2000);
         this.announceDeathPlayer(deadPlayer);
         this.waitConsoleTime(1000);
