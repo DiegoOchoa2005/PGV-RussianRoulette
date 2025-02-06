@@ -55,14 +55,24 @@ public class GameHandler extends Thread {
     }
   }
 
+  private void announceCurrentBullets() {
+    try {
+      for (Player player : players) {
+        player.getMessage()
+            .writeUTF("\nTHE SHOOTGUN HAS:\nFAKE BULLETS: " + this.shootgunFakeBullets + " \nREAL BULLETS: "
+                + this.shootgunRealBullets + "\n");
+        player.getMessage().flush();
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
   private void newRoundMessage() {
     for (Player player : players) {
       try {
         player.getMessage().writeUTF("WELCOME TO ROUND " + this.round + "!");
         player.getMessage().writeUTF("THERE ARE " + this.playerCount + " PLAYERS ALIVE!");
-        player.getMessage()
-            .writeUTF("\nTHE SHOOTGUN HAS:\nFAKE BULLETS: " + this.shootgunFakeBullets + " \nREAL BULLETS: "
-                + this.shootgunRealBullets + "\n");
         player.getMessage().flush();
       } catch (IOException e) {
         e.printStackTrace();
@@ -92,6 +102,7 @@ public class GameHandler extends Thread {
   private void announceRound() {
     this.waitConsoleTime(2000);
     this.newRoundMessage();
+    this.announceCurrentBullets();
   }
 
   private void startTurn() {
@@ -157,7 +168,7 @@ public class GameHandler extends Thread {
     this.calculatePlayerNextTurn();
     for (Player player : players) {
       try {
-        player.getMessage().writeUTF("IS PLAYER " + this.players.get(this.currentPlayer).getName() + " TURN!");
+        player.getMessage().writeUTF("\nIS PLAYER " + this.players.get(this.currentPlayer).getName() + " TURN!\n");
         player.getMessage().flush();
       } catch (IOException e) {
         e.printStackTrace();
@@ -219,11 +230,11 @@ public class GameHandler extends Thread {
       case "player":
         int otherPlayerIndex = this.currentPlayer == 0 ? 1 : 0;
         this.playerShooted = this.players.get(otherPlayerIndex).getName();
-        this.shootAction(otherPlayerIndex);
+        this.shootAction();
         break;
       case "myself":
         this.playerShooted = this.players.get(this.currentPlayer).getName();
-        this.shootAction(this.currentPlayer);
+        this.shootAction();
         break;
     }
   }
@@ -240,7 +251,7 @@ public class GameHandler extends Thread {
     }
   }
 
-  private void shootAction(int playerIndex) {
+  private void shootAction() {
     for (String bullet : this.shootgunBullets) {
       if (!bullet.equals("EMPTY")) {
         if (bullet.equals("FAKE")) {
@@ -250,7 +261,7 @@ public class GameHandler extends Thread {
         }
 
         if (bullet.equals("REAL")) {
-          this.announceShoot(this.players.get(playerIndex).getName(), bullet);
+          this.announceShoot(this.players.get(this.currentPlayer).getName(), bullet);
           this.shootgunBullets.set(this.shootgunBullets.indexOf(bullet), "EMPTY");
           return;
         }
@@ -267,8 +278,10 @@ public class GameHandler extends Thread {
         while (this.isRoundStarted) {
           this.waitConsoleTime(2000);
           playerNextTurnMessage();
+          this.waitConsoleTime(1500);
           playerAction();
           this.waitConsoleTime(1500);
+          this.announceCurrentBullets();
         }
       }
     } catch (IOException e) {
