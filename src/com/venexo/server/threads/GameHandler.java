@@ -80,6 +80,18 @@ public class GameHandler extends Thread {
     }
   }
 
+  private void finishRoundMessage() {
+    for (Player player : players) {
+      try {
+        player.getMessage().writeUTF("THE ROUND HAS FINISHED!");
+        player.getMessage().writeUTF("Get ready for the next round!");
+        player.getMessage().flush();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
   private void starterPlayerMessage() {
     for (Player player : players) {
       try {
@@ -102,6 +114,7 @@ public class GameHandler extends Thread {
   private void announceRound() {
     this.waitConsoleTime(2000);
     this.newRoundMessage();
+    this.waitConsoleTime(2000);
     this.announceCurrentBullets();
   }
 
@@ -118,6 +131,10 @@ public class GameHandler extends Thread {
     announceRound();
     startTurn();
     playerAction();
+  }
+
+  private void roundFinish() {
+    this.isRoundStarted = false;
   }
 
   private void randomRealBullets() {
@@ -287,6 +304,21 @@ public class GameHandler extends Thread {
     }
   }
 
+  private boolean isShotgunEmpty() {
+    ArrayList<String> emptySlots = new ArrayList<>(shootgunBullets);
+    boolean isEmpty = false;
+
+    for (String bullet : emptySlots) {
+      if (bullet.equals("EMPTY")) {
+        isEmpty = true;
+      } else {
+        isEmpty = false;
+        break;
+      }
+    }
+    return isEmpty;
+  }
+
   @Override
   public void run() {
     try {
@@ -301,7 +333,16 @@ public class GameHandler extends Thread {
           this.waitConsoleTime(1500);
           playerAction();
           this.waitConsoleTime(1500);
-          this.announceCurrentBullets();
+
+          if (!this.isShotgunEmpty()) {
+            this.announceCurrentBullets();
+          }
+          if (this.isShotgunEmpty()) {
+            this.waitConsoleTime(2000);
+            this.finishRoundMessage();
+            this.waitConsoleTime(2000);
+            this.roundFinish();
+          }
         }
       }
     } catch (IOException e) {
