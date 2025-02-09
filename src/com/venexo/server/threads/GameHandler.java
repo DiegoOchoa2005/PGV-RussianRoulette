@@ -2,8 +2,7 @@ package com.venexo.server.threads;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-
+import com.venexo.guns.Shotgun;
 import com.venexo.players.Player;
 
 public class GameHandler extends Thread {
@@ -13,19 +12,15 @@ public class GameHandler extends Thread {
   private String deadPlayer = "";
   private String playerShooted = "";
   private int round;
-  private int shootgunFakeBullets;
-  private int shootgunRealBullets;
-  private ArrayList<String> shootgunBullets = new ArrayList<>();
-  private final int MAX_SLOTS = 8;
   private boolean isRoundStarted;
   private boolean isGameOver;
+  private Shotgun shootgun = new Shotgun();
 
   public GameHandler(ArrayList<Player> players) {
     this.players = players;
     this.playerCount = players.size();
     this.round = 0;
-    this.shootgunFakeBullets = 0;
-    this.shootgunRealBullets = 0;
+
     this.isRoundStarted = false;
     this.isGameOver = false;
   }
@@ -62,8 +57,8 @@ public class GameHandler extends Thread {
     try {
       for (Player player : players) {
         player.getMessage()
-            .writeUTF("THE SHOOTGUN HAS:\nFAKE BULLETS: " + this.shootgunFakeBullets + " \nREAL BULLETS: "
-                + this.shootgunRealBullets);
+            .writeUTF("THE SHOOTGUN HAS:\nFAKE BULLETS: " + this.shootgun.getShootgunFakeBullets() + " \nREAL BULLETS: "
+                + this.shootgun.getShootgunRealBullets());
         player.getMessage().flush();
       }
     } catch (IOException e) {
@@ -99,7 +94,7 @@ public class GameHandler extends Thread {
   private void prepareRound() {
     this.isRoundStarted = true;
     this.round++;
-    fillShootgun();
+    this.shootgun.fillShootgun();
   }
 
   private void announceRound() {
@@ -129,56 +124,6 @@ public class GameHandler extends Thread {
   private void roundFinish() {
     this.isRoundStarted = false;
     this.checkIfPlayerIsDeath();
-  }
-
-  private void randomRealBullets() {
-    this.shootgunRealBullets = 1 + (int) (Math.random() * (MAX_SLOTS - 4) + 1);
-  }
-
-  private void randomFakeBullets() {
-    this.shootgunFakeBullets = 1 + (int) (Math.random() * (MAX_SLOTS - 4) + 1);
-  }
-
-  private void calculateCurrentRealBullets() {
-    if (this.shootgunRealBullets < 0) {
-      this.shootgunRealBullets = 0;
-      return;
-    }
-    this.shootgunRealBullets--;
-  }
-
-  private void calculateCurrentFakeBullets() {
-    if (this.shootgunFakeBullets < 0) {
-      this.shootgunFakeBullets = 0;
-      return;
-    }
-    this.shootgunFakeBullets--;
-  }
-
-  private void generateBullets() {
-    randomRealBullets();
-    randomFakeBullets();
-  }
-
-  private void fillShootgun() {
-    generateBullets();
-
-    shootgunBullets.clear();
-
-    for (int i = 0; i < this.shootgunFakeBullets; i++) {
-      this.shootgunBullets.add("FAKE");
-    }
-
-    for (int i = 0; i < this.shootgunRealBullets; i++) {
-      this.shootgunBullets.add("REAL");
-    }
-
-    if (this.shootgunBullets.size() < this.MAX_SLOTS) {
-      for (int i = 0; i <= this.MAX_SLOTS - this.shootgunBullets.size(); i++) {
-        this.shootgunBullets.add("EMPTY");
-      }
-    }
-    Collections.shuffle(this.shootgunBullets);
   }
 
   private void generateRandomStarterPlayerTurn() {
@@ -288,12 +233,12 @@ public class GameHandler extends Thread {
     int playerAffected = actionDisplayed.equalsIgnoreCase("myself") ? this.currentPlayer : this.calcualteNextPlayer();
     String shooterName = this.players.get(this.currentPlayer).getName();
     System.out.println(playerAffected);
-    for (String bullet : this.shootgunBullets) {
+    for (String bullet : this.shootgun.getShootgunBullets()) {
       if (!bullet.equals("EMPTY")) {
         if (bullet.equals("FAKE")) {
           this.announceShoot(shooterName, bullet);
-          this.shootgunBullets.set(this.shootgunBullets.indexOf(bullet), "EMPTY");
-          this.calculateCurrentFakeBullets();
+          this.shootgun.getShootgunBullets().set(this.shootgun.getShootgunBullets().indexOf(bullet), "EMPTY");
+          this.shootgun.calculateCurrentFakeBullets();
 
           if (actionDisplayed.equalsIgnoreCase("player")) {
             this.currentPlayer = this.calcualteNextPlayer();
@@ -304,8 +249,8 @@ public class GameHandler extends Thread {
         if (bullet.equals("REAL")) {
           this.announceShoot(shooterName, bullet);
           this.players.get(playerAffected).getShot();
-          this.shootgunBullets.set(this.shootgunBullets.indexOf(bullet), "EMPTY");
-          this.calculateCurrentRealBullets();
+          this.shootgun.getShootgunBullets().set(this.shootgun.getShootgunBullets().indexOf(bullet), "EMPTY");
+          this.shootgun.calculateCurrentRealBullets();
           this.currentPlayer = this.calcualteNextPlayer();
           return;
         }
@@ -324,21 +269,6 @@ public class GameHandler extends Thread {
         e.printStackTrace();
       }
     }
-  }
-
-  private boolean isShotgunEmpty() {
-    ArrayList<String> emptySlots = new ArrayList<>(shootgunBullets);
-    boolean isEmpty = false;
-
-    for (String bullet : emptySlots) {
-      if (bullet.equals("EMPTY")) {
-        isEmpty = true;
-      } else {
-        isEmpty = false;
-        break;
-      }
-    }
-    return isEmpty;
   }
 
   private void announceDeathPlayer(String playerName) {
@@ -457,7 +387,7 @@ public class GameHandler extends Thread {
           if (this.isGameOver) {
             break;
           }
-          if (!this.isShotgunEmpty()) {
+          if (!this.shootgun.isShotgunEmpty()) {
             this.showActualRoundMessage();
             this.announcePlayersCurrentLives();
             this.announceCurrentBullets();
