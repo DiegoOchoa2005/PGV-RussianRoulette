@@ -10,7 +10,7 @@ import java.util.Scanner;
 import com.venexo.players.threads.ServerListener;
 import com.venexo.utils.Constants;
 
-public class PlayerHandler {
+public class PlayerApp {
   public static void main(String[] args) throws Exception {
     Scanner scanner = new Scanner(System.in);
     System.out.println("Introduce your beatiful name: ");
