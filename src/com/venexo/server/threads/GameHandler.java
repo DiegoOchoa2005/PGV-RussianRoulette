@@ -254,6 +254,7 @@ public class GameHandler extends Thread {
       return;
     }
     String action = handlePlayerInput().toLowerCase();
+
     switch (action) {
       case "player":
         this.playerShooted = this.players.get(this.calcualteNextPlayer()).getName();
@@ -264,7 +265,7 @@ public class GameHandler extends Thread {
         this.shootAction(action);
         break;
     }
-    this.currentPlayer = this.calcualteNextPlayer();
+
     this.checkIfPlayerIsDeath();
     if (isGameOver) {
       return;
@@ -293,6 +294,10 @@ public class GameHandler extends Thread {
           this.announceShoot(shooterName, bullet);
           this.shootgunBullets.set(this.shootgunBullets.indexOf(bullet), "EMPTY");
           this.calculateCurrentFakeBullets();
+
+          if (actionDisplayed.equalsIgnoreCase("player")) {
+            this.currentPlayer = this.calcualteNextPlayer();
+          }
           return;
         }
 
@@ -301,6 +306,7 @@ public class GameHandler extends Thread {
           this.players.get(playerAffected).getShot();
           this.shootgunBullets.set(this.shootgunBullets.indexOf(bullet), "EMPTY");
           this.calculateCurrentRealBullets();
+          this.currentPlayer = this.calcualteNextPlayer();
           return;
         }
       }
