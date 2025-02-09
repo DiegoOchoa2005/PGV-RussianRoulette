@@ -2,11 +2,11 @@ package com.venexo.players;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.IOException;
 import java.net.Socket;
 
 public class Player {
   private Socket socket;
+
   private String name;
   private DataOutputStream message;
   private DataInputStream input;
@@ -48,6 +48,10 @@ public class Player {
 
   public void setLives(int lives) {
     this.lives = lives;
+  }
+
+  public Socket getSocket() {
+    return socket;
   }
 
   public void getShot() {

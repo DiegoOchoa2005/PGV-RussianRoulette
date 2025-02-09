@@ -44,7 +44,11 @@ public class ServerApp {
 
     try {
       Thread.sleep(3000);
-      new GameHandler(players).start();
+      GameHandler game = new GameHandler(players);
+      game.start();
+      game.join();
+      serverSocket.close();
+
     } catch (Exception e) {
       e.printStackTrace();
     }

@@ -32,7 +32,13 @@ public class PlayerApp {
 
       outputStream.writeUTF(action);
       outputStream.flush();
+
+      if (socket.isClosed()) {
+        scanner.close();
+        socket.close();
+      }
     }
+
   }
 
 }
