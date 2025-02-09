@@ -23,27 +23,27 @@ public class Player {
   }
 
   public String getName() {
-    return name;
+    return this.name;
   }
 
   public DataOutputStream getMessage() {
-    return message;
+    return this.message;
   }
 
   public DataInputStream getInput() {
-    return input;
+    return this.input;
   }
 
   public boolean isAlive() {
-    return isAlive;
+    return this.isAlive;
   }
 
   public void setAlive(boolean alive) {
-    isAlive = alive;
+    this.isAlive = alive;
   }
 
   public int getLives() {
-    return lives;
+    return this.lives;
   }
 
   public void setLives(int lives) {
@@ -51,7 +51,7 @@ public class Player {
   }
 
   public Socket getSocket() {
-    return socket;
+    return this.socket;
   }
 
   public void getShot() {
