@@ -38,7 +38,7 @@ public class PlayerActionHandler {
       } else {
         try {
           this.roundManager.getPlayers().get(this.roundManager.getCurrentPlayer()).getMessage()
-              .writeUTF(ConsoleColors.changeColor("Please choose a valid action!", ConsoleColors.ANSI_RED));
+              .writeUTF(ConsoleColors.changeBoldColor("\nPlease choose a valid action!\n", ConsoleColors.ANSI_RED));
           this.roundManager.getPlayers().get(this.roundManager.getCurrentPlayer()).getMessage().flush();
         } catch (IOException e) {
           e.printStackTrace();
@@ -88,7 +88,7 @@ public class PlayerActionHandler {
     for (Player player : this.roundManager.getPlayers()) {
       try {
         player.getMessage()
-            .writeUTF(shooterName
+            .writeUTF("\n" + shooterName
                 + ConsoleColors.changeBoldColor(" SHOOTS A " + bulletName, ConsoleColors.ANSI_ORANGE)
                 + shotHimself);
         player.getMessage().flush();

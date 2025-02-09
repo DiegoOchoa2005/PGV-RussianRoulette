@@ -3,6 +3,8 @@ package com.venexo.players.threads;
 import java.io.DataInputStream;
 import java.io.IOException;
 
+import com.venexo.colors.ConsoleColors;
+
 public class ServerListener extends Thread {
   private DataInputStream inputStream;
 
@@ -15,9 +17,10 @@ public class ServerListener extends Thread {
     while (true) {
       try {
         String serverMessage = this.inputStream.readUTF();
-        System.out.println("\n" + serverMessage);
+        System.out.print(serverMessage);
       } catch (IOException e) {
-        System.out.println("🔴 Conexión con el servidor perdida.");
+        System.out
+            .println(ConsoleColors.changeBoldColor("\nConexión con el servidor perdida.", ConsoleColors.ANSI_RED));
         break;
       }
     }

@@ -31,14 +31,14 @@ public class ServerApp {
       Player player = new Player(clientSocket, playerName, playerInput, serverOutput);
       players.add(player);
 
-      serverOutput.writeUTF("Welcome " + playerName + "!");
+      serverOutput.writeUTF("\nWelcome " + playerName + "!");
       serverOutput.flush();
       System.out.println(players.size());
     }
     System.out.println("¡Two players joined the game! Starting game...");
 
     for (Player player : players) {
-      player.getMessage().writeUTF("The game is going to start. Get ready!\n");
+      player.getMessage().writeUTF("\nThe game is going to start. Get ready!\n");
       player.getMessage().flush();
     }
 

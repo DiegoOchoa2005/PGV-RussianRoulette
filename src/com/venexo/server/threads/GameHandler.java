@@ -25,7 +25,7 @@ public class GameHandler extends Thread {
   public void run() {
     try {
       this.gameMessenger.rulesExplication();
-      this.gameMessenger.showTimeToStartARound(15000, this.roundManager);
+      this.gameMessenger.showTimeToStartARound(10000, this.roundManager);
       while (!this.roundManager.isGameOver()) {
 
         this.roundManager.roundStart(this.shootgun);

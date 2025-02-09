@@ -3,6 +3,7 @@ package com.venexo.utils;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import com.venexo.colors.ConsoleColors;
 import com.venexo.guns.Shotgun;
 import com.venexo.players.Player;
 
@@ -86,8 +87,11 @@ public class RoundManager {
     try {
       for (Player player : players) {
         player.getMessage()
-            .writeUTF("THE SHOOTGUN HAS:\nFAKE BULLETS: " + shootgun.getShootgunFakeBullets() + " \nREAL BULLETS: "
-                + shootgun.getShootgunRealBullets());
+            .writeUTF(ConsoleColors.changeBoldColor("\nTHE SHOTGUN HAS:\n", ConsoleColors.ANSI_ORANGE)
+                + ConsoleColors.changeBoldColor("\nFAKE BULLETS: " + String.valueOf(shootgun.getShootgunFakeBullets()),
+                    ConsoleColors.ANSI_BLUE)
+                + ConsoleColors.changeBoldColor(" \nREAL BULLETS: "
+                    + shootgun.getShootgunRealBullets() + "\n", ConsoleColors.ANSI_RED));
         player.getMessage().flush();
       }
     } catch (IOException e) {
@@ -98,10 +102,10 @@ public class RoundManager {
   public void announcePlayersCurrentLives() {
     for (Player player : players) {
       try {
-        player.getMessage().writeUTF(this.players.get(0).getName() + "'s LIVES: "
-            + this.players.get(0).getLives());
-        player.getMessage().writeUTF(this.players.get(1).getName() + "'s LIVES: "
-            + this.players.get(1).getLives());
+        player.getMessage().writeUTF(ConsoleColors.changeBoldColor("\n" + this.players.get(0).getName() + "'s LIVES: "
+            + this.players.get(0).getLives() + "\n", ConsoleColors.ANSI_GREEN));
+        player.getMessage().writeUTF(ConsoleColors.changeBoldColor("\n" + this.players.get(1).getName() + "'s LIVES: "
+            + this.players.get(1).getLives() + "\n", ConsoleColors.ANSI_GREEN));
         player.getMessage().flush();
       } catch (IOException e) {
         e.printStackTrace();
@@ -112,7 +116,9 @@ public class RoundManager {
   public void announceDeathPlayer() {
     for (Player player : players) {
       try {
-        player.getMessage().writeUTF("PLAYER: " + this.deadPlayer + " IS DEAD!");
+        player.getMessage()
+            .writeUTF(ConsoleColors.BOLD + ConsoleColors.ANSI_YELLOW + "\nPLAYER: " + ConsoleColors.ANSI_ORANGE
+                + this.deadPlayer + ConsoleColors.changeBoldColor(" IS DEAD!\n", ConsoleColors.ANSI_RED));
         player.getMessage().flush();
       } catch (IOException e) {
         e.printStackTrace();
@@ -124,7 +130,10 @@ public class RoundManager {
     Player winner = this.players.get(0);
     for (Player player : players) {
       try {
-        player.getMessage().writeUTF("THE GAME IS OVER! The winner is: " + winner.getName());
+        player.getMessage()
+            .writeUTF(ConsoleColors.BOLD + ConsoleColors.ANSI_RED + "\nTHE GAME IS OVER!" + ConsoleColors.ANSI_GREEN
+                + "\nThe winner is: " + ConsoleColors.changeBoldColor(winner.getName(), ConsoleColors.ANSI_ORANGE)
+                + "\n");
         player.getMessage().flush();
       } catch (IOException e) {
         e.printStackTrace();
@@ -134,12 +143,12 @@ public class RoundManager {
 
   public void messageOptions() {
     try {
-      this.players.get(this.currentPlayer).getMessage().writeUTF("""
-          IT'S YOUR TURN! WHAT DO YOU WANT TO DO?
-          - PLAYER: To choose a player to shoot.
+      this.players.get(this.currentPlayer).getMessage().writeUTF(ConsoleColors.changeBoldColor("""
+          \nIT'S YOUR TURN! WHAT DO YOU WANT TO DO?
+          - PLAYER: To shoot your oponent.
           - MYSELF: To shoot yourself.
-          Be careful, maybe you could die! :D
-          """);
+          Be careful, maybe you could die! :D\n
+          """, ConsoleColors.ANSI_CYAN));
       this.players.get(this.currentPlayer).getMessage().flush();
     } catch (Exception e) {
       e.printStackTrace();

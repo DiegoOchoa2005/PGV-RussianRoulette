@@ -3,6 +3,7 @@ package com.venexo.utils;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import com.venexo.colors.ConsoleColors;
 import com.venexo.players.Player;
 
 public class GameMessenger {
@@ -16,8 +17,11 @@ public class GameMessenger {
     try {
       int seconds = miliseconds / 1000;
       int isFirstRound = roundManager.getRound() == 0 ? 1 : roundManager.getRound();
+
       for (int i = seconds; i > 0; i--) {
-        String countdownMessage = "\rTHE ROUND " + isFirstRound + " WILL START IN " + i + "";
+        String countdownMessage = ConsoleColors.changeBoldColor("\rTHE ROUND ", ConsoleColors.ANSI_GREEN)
+            + ConsoleColors.changeBoldColor(String.valueOf(isFirstRound) + " WILL START IN "
+                + i + " ", ConsoleColors.ANSI_GREEN);
 
         for (Player player : this.roundManager.getPlayers()) {
           try {
@@ -28,45 +32,47 @@ public class GameMessenger {
           }
         }
 
-        try {
-          Thread.sleep(1000);
-        } catch (InterruptedException e) {
-          e.printStackTrace();
-        }
+        ConsoleHandler.waitConsoleTime(1000);
       }
 
       ConsoleHandler.clearConsole(this.roundManager.getPlayers());
     } catch (Exception e) {
       e.printStackTrace();
-
     }
   }
 
   public void rulesExplication() throws IOException {
     for (Player player : this.roundManager.getPlayers()) {
-      player.getMessage().writeUTF("Hello " + player.getName() + "!\n");
-      player.getMessage().writeUTF(
-          """
-              Rules are simple:
-              - There's gonna be just one shotgun for all of you.
-              - Per each round the shotgun is gonna have random fake or real bullets.
-              - That doesn't mean that the shotgun is full always, it just means that the shotgun could have 2 - 8 bullets if its the case.
-              - The player's turn to use the shotgun is random when is a new round.
-              - If the player shoots to the other player or himself, the turn will be passed to the next player.
-              - The round will end when the shotgun is empty.
-              - Each player has 9 lives.
-              - The game will end when one player is dead.
-              - Good luck :D
-              """);
+      player.getMessage()
+          .writeUTF(ConsoleColors.BOLD + ConsoleColors.ANSI_YELLOW + "\nHello "
+              + ConsoleColors.changeBoldColor(player.getName(), ConsoleColors.ANSI_YELLOW) +
+              ConsoleColors.changeBoldColor("!\n", ConsoleColors.ANSI_YELLOW));
       player.getMessage().flush();
     }
+
+    for (int i = 0; i < Rules.RULES.length; i++) {
+      String ruleMessage = Rules.getRule(i) + "\n";
+
+      for (Player player : this.roundManager.getPlayers()) {
+        try {
+          player.getMessage().writeUTF(ruleMessage);
+          player.getMessage().flush();
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+      }
+      ConsoleHandler.waitConsoleTime(1000);
+
+    }
+
   }
 
   public void finishRoundMessage(ArrayList<Player> players) {
     for (Player player : players) {
       try {
-        player.getMessage().writeUTF("THE ROUND HAS FINISHED!");
-        player.getMessage().writeUTF("Get ready for the next round!");
+        player.getMessage().writeUTF(ConsoleColors.changeBoldColor("THE ROUND HAS FINISHED!", ConsoleColors.ANSI_RED));
+        player.getMessage()
+            .writeUTF(ConsoleColors.changeBoldColor("\nGet ready for the next round!\n", ConsoleColors.ANSI_GREEN));
         player.getMessage().flush();
       } catch (IOException e) {
         e.printStackTrace();
@@ -78,8 +84,11 @@ public class GameMessenger {
     for (Player player : this.roundManager.getPlayers()) {
       try {
         player.getMessage()
-            .writeUTF("PLAYER: " + this.roundManager.getPlayers().get(this.roundManager.getCurrentPlayer()).getName()
-                + " IS THE STARTER!");
+            .writeUTF(ConsoleColors.BOLD + ConsoleColors.ANSI_YELLOW + "\nPLAYER " +
+                ConsoleColors.ANSI_GREEN
+                + this.roundManager.getPlayers().get(this.roundManager.getCurrentPlayer()).getName()
+                + ConsoleColors.ANSI_YELLOW
+                + " IS THE STARTER!\n" + ConsoleColors.ANSI_RESET);
         player.getMessage().flush();
       } catch (IOException e) {
         e.printStackTrace();
@@ -91,8 +100,10 @@ public class GameMessenger {
   public void playerNextTurnMessage() {
     for (Player player : this.roundManager.getPlayers()) {
       try {
-        player.getMessage().writeUTF(
-            "IS " + this.roundManager.getPlayers().get(this.roundManager.getCurrentPlayer()).getName() + "'s TURN!");
+        player.getMessage().writeUTF(ConsoleColors.BOLD + ConsoleColors.ANSI_YELLOW +
+            "\nIS " + ConsoleColors.ANSI_CYAN
+            + this.roundManager.getPlayers().get(this.roundManager.getCurrentPlayer()).getName()
+            + ConsoleColors.ANSI_YELLOW + "'s TURN!\n");
         player.getMessage().flush();
       } catch (IOException e) {
         e.printStackTrace();
@@ -104,7 +115,8 @@ public class GameMessenger {
     int isFirstRound = roundManager.getRound() == 0 ? 1 : this.roundManager.getRound();
     for (Player player : this.roundManager.getPlayers()) {
       try {
-        player.getMessage().writeUTF("ROUND: " + isFirstRound);
+        player.getMessage()
+            .writeUTF(ConsoleColors.changeBoldColor("ROUND: " + isFirstRound + "\n", ConsoleColors.ANSI_ORANGE));
         player.getMessage().flush();
       } catch (IOException e) {
         e.printStackTrace();
