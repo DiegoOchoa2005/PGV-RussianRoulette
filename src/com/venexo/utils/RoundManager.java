@@ -133,6 +133,13 @@ public class RoundManager {
         if (player.isAlive()) {
           winnerName = player.getName();
         }
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+
+    for (Player player : players) {
+      try {
         player.getMessage()
             .writeUTF(ConsoleColors.BOLD + ConsoleColors.ANSI_RED + "\nTHE GAME IS OVER!" + ConsoleColors.ANSI_GREEN
                 + "\nThe winner is: " + ConsoleColors.changeBoldColor(winnerName, ConsoleColors.ANSI_ORANGE)
