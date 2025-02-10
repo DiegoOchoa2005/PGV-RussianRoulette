@@ -127,15 +127,17 @@ public class RoundManager {
   }
 
   public void announceWinner() {
+    String winnerName = "";
     for (Player player : players) {
       try {
         if (player.isAlive()) {
-          player.getMessage()
-              .writeUTF(ConsoleColors.BOLD + ConsoleColors.ANSI_RED + "\nTHE GAME IS OVER!" + ConsoleColors.ANSI_GREEN
-                  + "\nThe winner is: " + ConsoleColors.changeBoldColor(player.getName(), ConsoleColors.ANSI_ORANGE)
-                  + "\n");
-          player.getMessage().flush();
+          winnerName = player.getName();
         }
+        player.getMessage()
+            .writeUTF(ConsoleColors.BOLD + ConsoleColors.ANSI_RED + "\nTHE GAME IS OVER!" + ConsoleColors.ANSI_GREEN
+                + "\nThe winner is: " + ConsoleColors.changeBoldColor(winnerName, ConsoleColors.ANSI_ORANGE)
+                + "\n");
+        player.getMessage().flush();
       } catch (IOException e) {
         e.printStackTrace();
       }
